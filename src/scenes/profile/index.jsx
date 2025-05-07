@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState("Instructor");
   const [email, setEmail] = useState("instructor.9837@vigan.sti.edu.ph");
@@ -11,13 +13,17 @@ const Profile = () => {
     console.log("Saved:", { name, email });
   };
 
+  const handleLogout = () => {
+    navigate("/login");
+  };
+
   return (
     <div className="min-h-screen bg-white text-[#333] font-sans">
       {/* Extended Blue Header */}
       <div className="bg-[#005BAC] text-white px-10 py-16 w-full relative">
         {/* Back Button */}
         <button
-          onClick={() => window.location.href = "/dashboard"}
+          onClick={() => navigate("/dashboard")}
           className="absolute top-6 left-6 flex items-center text-white hover:text-gray-200 transition text-lg"
         >
           <ArrowLeft className="w-6 h-6 mr-2" />
@@ -25,7 +31,11 @@ const Profile = () => {
         </button>
 
         <div className="flex items-center mt-10 ml-14">
-          <div className="w-24 h-24 bg-gray-300 rounded-full border-4 border-white"></div>
+          <img
+            src="/stilogoz.png"
+            alt="Profile"
+            className="w-24 h-24 rounded-full border-4 border-white object-cover"
+          />
 
           <div className="ml-6">
             <h2 className="text-4xl font-bold">{name}</h2>
@@ -60,7 +70,10 @@ const Profile = () => {
           </div>
 
           <div className="mt-8">
-            <button className="bg-[#D32F2F] hover:bg-red-700 text-white px-6 py-3 text-lg rounded shadow-sm transition">
+            <button
+              onClick={handleLogout}
+              className="bg-[#D32F2F] hover:bg-red-700 text-white px-6 py-3 text-lg rounded shadow-sm transition"
+            >
               Log out
             </button>
           </div>
