@@ -23,7 +23,7 @@ const Login = ({ setAuth }) => {
     }
 
     setError("");
-    setAuth(true); // mark user as authenticated
+    setAuth(true);
     navigate("/dashboard");
   };
 

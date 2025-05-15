@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, AppBar, Toolbar, TextField, Avatar } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 
 const StudentProfile = () => {
   const { name } = useParams();
@@ -37,11 +36,6 @@ const StudentProfile = () => {
   };
 
   const student = studentData[decodeURIComponent(name)];
-
-  const handleScanClick = () => {
-    navigate('/id-scanner'); // Updated to match your folder name
-
-  };
 
   if (!student) {
     return (
@@ -108,7 +102,6 @@ const StudentProfile = () => {
             <Typography sx={{ fontFamily: "'Poppins', sans-serif", fontSize: '1rem' }}>
               <strong>Year Level:</strong> {student.yearLevel}
             </Typography>
-           
             <Typography sx={{ fontFamily: "'Poppins', sans-serif", fontSize: '1rem', mt: 1 }}>
               <strong>Parent's Name:</strong> {student.parentName}
             </Typography>
@@ -117,39 +110,23 @@ const StudentProfile = () => {
             </Typography>
           </Box>
 
-          {/* Right: Student Image and SCAN Button */}
-          <Box sx={{ 
-            position: "absolute", 
-            top: 0, 
-            right: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center'
-          }}>
+          {/* Right: Student Image */}
+          <Box 
+            sx={{ 
+              position: "absolute", 
+              top: 0, 
+              right: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}
+          >
             <Avatar 
               alt={decodeURIComponent(name)}
               src="" 
               sx={{ width: 150, height: 150, borderRadius: 2 }}
               variant="square"
             />
-            {/* SCAN button with onClick handler */}
-            <Button 
-              variant="contained" 
-              startIcon={<QrCodeScannerIcon />}
-              onClick={handleScanClick}
-              sx={{ 
-                mt: 2,
-                backgroundColor: '#0057A4', 
-                color: 'white',
-                fontFamily: "'Poppins', sans-serif",
-                fontWeight: 600,
-                '&:hover': {
-                  backgroundColor: '#003d7a',
-                }
-              }}
-            >
-              SCAN
-            </Button>
           </Box>
         </Box>
 
@@ -215,4 +192,5 @@ const StudentProfile = () => {
     </Box>
   );
 };
+
 export default StudentProfile;

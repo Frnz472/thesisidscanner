@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { HiMenuAlt3 } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import { MdOutlineDashboard, MdOutlineRecordVoiceOver } from "react-icons/md";
+import {
+  MdOutlineDashboard,
+  MdOutlineRecordVoiceOver,
+  MdPeopleOutline,
+} from "react-icons/md";
 import { CiSettings } from "react-icons/ci";
 import { IoIosHelpCircleOutline } from "react-icons/io";
 import { AiOutlineBook } from "react-icons/ai";
@@ -9,12 +13,21 @@ import { AiOutlineBook } from "react-icons/ai";
 const Sidebar = () => {
   const menus = [
     { name: "Dashboard", link: "/dashboard", icon: MdOutlineDashboard },
-    { name: "Attendance Record", link: "/attendancerecord", icon: MdOutlineRecordVoiceOver },
+    {
+      name: "Attendance Record",
+      link: "/attendancerecord",
+      icon: MdOutlineRecordVoiceOver,
+    },
+    {
+      name: "Student Management",
+      link: "/studentmanagement",
+      icon: MdPeopleOutline,
+    },
     { name: "Courses", link: "/courses", icon: AiOutlineBook },
     { name: "Settings", link: "/settings", icon: CiSettings },
     { name: "Help/Support", link: "/helps", icon: IoIosHelpCircleOutline },
   ];
-  
+
   const [open, setOpen] = useState(true);
 
   return (

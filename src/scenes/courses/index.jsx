@@ -20,86 +20,70 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 
 const Courses = () => {
-  const [selectedCourse, setSelectedCourse] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedProgram, setSelectedProgram] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const courseList = [
-    "BSCS 101",
-    "BSCS 201",
-    "BSCS 301",
-    "BSCS 401",
-    "HRS 101",
-    "HRS 201",
+  const instructors = [
+    {
+      name: "Jane Doe",
+      time: "08:00 AM – 10:00 AM",
+      schedule: "MWF",
+      program: "Computer Science",
+      subject: "Data Structures",
+      yearLevel: "2nd Year",
+    },
+    {
+      name: "John Smith",
+      time: "10:30 AM – 12:00 PM",
+      schedule: "TTh",
+      program: "Information Technology",
+      subject: "Web Development",
+      yearLevel: "3rd Year",
+    },
   ];
 
-  const subjectData = {
-    "BSCS 101": ["Introduction to Computing", "Computer Programming 1", "Mathematics in the Modern World"],
-    "BSCS 201": ["Computer Programming 3", "Data Structures and Algorithms","The Entrepreneurial Mind"],
-    "BSCS 301": ["Intermediate Mobile Programming", "Artificial Intelligence"],
-    "BSCS 401": ["Thesis Writing", "Mobile Development"],
-    "HRS 101": ["Hospitality Basics"],
-    "HRS 201": ["Hotel Management"],
-  };
+  const filteredInstructors = instructors.filter((instructor) => {
+    const matchesSearch = instructor.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesProgram =
+      !selectedProgram || instructor.program === selectedProgram;
+    return matchesSearch && matchesProgram;
+  });
 
-  const courseData = {
-    "BSCS 101": [
-      { id: "02003267548", name: "Eren Yeager", subject: "Introduction to Computing" },
-      { id: "03000231212", name: "Mikasa Ackerman", subject: "Computer Programming 1" },
-      { id: "03000163521", name: "Armin Arlert", subject: "Mathematics in the Modern World" },
-    ],
-    "BSCS 201": [{ id: "03000254312", name: "Stiphin Kyuri", subject: "Computer Programming 3" }],
-    "BSCS 301": [{ id: "03000238712", name: "LeBran Jhames", subject: "Data Structures and Algorithms" }],
-    "BSCS 401": [
-      { id: "02003267554", name: "Naruto Castillo", subject: "Intermediate Mobile Programming" },
-      { id: "02003267541", name: "Sasuke Tubon", subject: "Mobile Development" },
-    ],
-    "HRS 101": [{ id: "02003267566", name: "Armin Armin", subject: "Hospitality Basics" }],
-    "HRS 201": [{ id: "02003267565", name: "James Harden", subject: "Hotel Management" }],
-  };
-
-  const filteredStudents = courseData[selectedCourse]?.filter((student) =>
-    selectedSubject ? student.subject === selectedSubject : true
-  );
+  const programOptions = [
+    "Computer Science",
+    "Information Technology",
+    "Hospitality Management",
+  ];
 
   return (
     <div style={{ display: "flex", height: "100vh", flexDirection: "column" }}>
       <Topbar />
       <div style={{ display: "flex", flex: 1 }}>
         <Sidebar />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            padding: "20px",
-          }}
-        >
-          {/* Header */}
+        <div style={{ flex: 1, padding: "20px" }}>
           <Typography
-            variant="body1"
-            sx={{
-              fontWeight: "bold",
-              fontSize: "20px",
-              mb: 2,
-              fontFamily: "'Poppins', sans-serif",
-            }}
+            variant="h5"
+            sx={{ fontWeight: "bold", mb: 3, fontFamily: "'Poppins', sans-serif" }}
           >
-            Courses
+            Courses Management
           </Typography>
 
-          {/* Filters Section: Search, Course, Subject */}
           <div
             style={{
               display: "flex",
               gap: "20px",
               marginBottom: "20px",
               flexWrap: "wrap",
+              alignItems: "center",
             }}
           >
-            {/* Search Bar */}
             <TextField
               variant="outlined"
               placeholder="Search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -110,86 +94,58 @@ const Courses = () => {
               sx={{ width: "300px" }}
             />
 
-            {/* Course Filter */}
-            <FormControl sx={{ width: "300px" }}>
-              <InputLabel>Filter by Program</InputLabel>
+            <FormControl sx={{ width: "200px" }}>
+              <InputLabel>All</InputLabel>
               <Select
-                value={selectedCourse}
-                label="Filter by Course"
-                onChange={(e) => {
-                  setSelectedCourse(e.target.value);
-                  setSelectedSubject(""); // reset subject when course changes
-                }}
+                value={selectedProgram}
+                onChange={(e) => setSelectedProgram(e.target.value)}
+                label="Program"
               >
-                {courseList.map((course) => (
-                  <MenuItem key={course} value={course}>
-                    {course}
+                <MenuItem value="">All</MenuItem>
+                {programOptions.map((program) => (
+                  <MenuItem key={program} value={program}>
+                    {program}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-
-            {/* Subject Filter */}
-            {selectedCourse && subjectData[selectedCourse] && (
-              <FormControl sx={{ width: "300px" }}>
-                <InputLabel>Filter by Subject</InputLabel>
-                <Select
-                  value={selectedSubject}
-                  label="Filter by Subject"
-                  onChange={(e) => setSelectedSubject(e.target.value)}
-                >
-                  <MenuItem value="">All Subjects</MenuItem>
-                  {subjectData[selectedCourse].map((subject) => (
-                    <MenuItem key={subject} value={subject}>
-                      {subject}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
           </div>
 
-          {/* Course Table */}
-          {selectedCourse && (
-            <>
-              <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
-                Students in {selectedCourse}{" "}
-                {selectedSubject && ` - ${selectedSubject}`}
-              </Typography>
-              <TableContainer component={Paper} sx={{ boxShadow: 2 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: "#f0f2f5" }}>
-                      <TableCell sx={{ fontWeight: "bold", color: "#333" }}>
-                        Student ID
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold", color: "#333" }}>
-                        Name
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold", color: "#333" }}>
-                        Subject
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredStudents?.map((student, index) => (
-                      <TableRow
-                        key={student.id}
-                        sx={{
-                          backgroundColor:
-                            index % 2 === 0 ? "#ffffff" : "#f9f9f9",
-                        }}
-                      >
-                        <TableCell>{student.id}</TableCell>
-                        <TableCell>{student.name}</TableCell>
-                        <TableCell>{student.subject}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </>
-          )}
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead sx={{ backgroundColor: "#f0f2f5" }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Time</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Schedule</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>
+                    Program & Subject Handled
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Year Level</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredInstructors.map((instructor, index) => (
+                  <TableRow
+                    key={index}
+                    sx={{
+                      backgroundColor: index % 2 === 0 ? "#fff" : "#f9f9f9",
+                    }}
+                  >
+                    <TableCell>{instructor.name}</TableCell>
+                    <TableCell>{instructor.time}</TableCell>
+                    <TableCell>{instructor.schedule}</TableCell>
+                    <TableCell>
+                      {instructor.program}
+                      <br />
+                      {instructor.subject}
+                    </TableCell>
+                    <TableCell>{instructor.yearLevel}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </div>
       </div>
     </div>
