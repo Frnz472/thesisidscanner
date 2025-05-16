@@ -1,30 +1,43 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, TextField, Typography, Paper, Alert } from "@mui/material";
+import { Box, Button, TextField, Typography, Paper } from "@mui/material";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { initializeApp } from "firebase/app";
 
 const Login = ({ setAuth }) => {
+  const firebaseConfig = {
+    apiKey: "AIzaSyCLZ3YCKtTNjJzM-1h1cSeqEuKYYODwxAo",
+    authDomain: "stiidscanner-b8e8b.firebaseapp.com",
+    projectId: "stiidscanner-b8e8b",
+    storageBucket: "stiidscanner-b8e8b.firebasestorage.app",
+    messagingSenderId: "881024085386",
+    appId: "1:881024085386:web:9bc270dbc22d9011e2ac73",
+    measurementId: "G-GX896CEYJ6",
+  };
+
+  const firebaseapp = initializeApp(firebaseConfig);
+  const auth = getAuth(firebaseapp);
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = () => {
-    if (!email && !password) {
-      setError("Please enter both email and password.");
-      return;
+  const handleLogin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setAuth(true);
+          navigate("/dashboard");
+        } else {
+          navigate("/login");
+        }
+      });
+    } catch (error) {
+      console.log(`There was an error: ${error}`);
+      setError("Invalid email or password");
     }
-    if (!email) {
-      setError("Please enter your email.");
-      return;
-    }
-    if (!password) {
-      setError("Please enter your password.");
-      return;
-    }
-
-    setError("");
-    setAuth(true);
-    navigate("/dashboard");
   };
 
   return (
@@ -53,13 +66,6 @@ const Login = ({ setAuth }) => {
         <Typography variant="h5" fontWeight="bold" mb={3}>
           Log In
         </Typography>
-
-        {error && (
-          <Alert severity="error" sx={{ width: "100%", mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
         <TextField
           fullWidth
           label="Email"
@@ -85,6 +91,11 @@ const Login = ({ setAuth }) => {
         >
           LOG IN
         </Button>
+        {error && (
+          <Typography color="error" mt={2}>
+            {error}
+          </Typography>
+        )}
       </Paper>
     </Box>
   );

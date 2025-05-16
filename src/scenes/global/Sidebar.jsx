@@ -19,8 +19,8 @@ const Sidebar = () => {
       icon: MdOutlineRecordVoiceOver,
     },
     {
-      name: "Student Management",
-      link: "/studentmanagement",
+      name: "Class List",
+      link: "/classlist",
       icon: MdPeopleOutline,
     },
     { name: "Courses", link: "/courses", icon: AiOutlineBook },

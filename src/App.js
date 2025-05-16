@@ -8,11 +8,11 @@ import Courses from "./scenes/courses";
 import Profile from "./scenes/profile";
 import NotificationPanel from "./scenes/notification";
 import StudentProfile from "./scenes/studentprof";
-import ProfileSettings from "./scenes/profilesettings"; 
+import ProfileSettings from "./scenes/profilesettings";
 import NotificationPreferences from "./scenes/notificationpref";
 import IDScanner from "./scenes/idscannerr";
 import Login from "./scenes/loginpage";
-import StudentManagement from "./scenes/studentmanage";
+import Classlist from "./scenes/classlist";
 
 function App() {
   const [auth, setAuth] = useState(false);
@@ -30,15 +30,19 @@ function App() {
               <Route path="/" element={<Navigate to="/dashboard" />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/attendancerecord" element={<Attendancerecord />} />
-              <Route path="/studentmanagement" element={<StudentManagement/>}/>
-              <Route path="/courses" element={<Courses />} />
+              <Route path="/classlist" element={<Classlist />} />
+
+              <Route path="/courses" element={<Courses />} /> 
               <Route path="/settings" element={<Settings />} />
               <Route path="/helps" element={<Helps />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/notification" element={<NotificationPanel />} />
               <Route path="/studentprof/:name" element={<StudentProfile />} />
               <Route path="/profile-settings" element={<ProfileSettings />} />
-              <Route path="/notification-preferences" element={<NotificationPreferences />} />
+              <Route
+                path="/notification-preferences"
+                element={<NotificationPreferences />}
+              />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </>
           ) : (
