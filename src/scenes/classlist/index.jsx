@@ -28,6 +28,8 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import { db } from "../../firebase/firebase";
+import { collection, addDoc } from "firebase/firestore";
 
 const Classlist = () => {
   const navigate = useNavigate();
@@ -64,7 +66,7 @@ const Classlist = () => {
     "4th Year",
   ];
 
-  const handleAddStudent = () => {
+  const handleAddStudent = async () => {
     if (
       newStudent.id &&
       newStudent.firstName &&
@@ -72,19 +74,26 @@ const Classlist = () => {
       newStudent.rfid &&
       newStudent.program
     ) {
-      setStudents((prev) => [...prev, newStudent]);
-      setNewStudent({
-        id: "",
-        firstName: "",
-        lastName: "",
-        rfid: "",
-        contactNumber: "",
-        guardianName: "",
-        guardianContactNumber: "",
-        program: "",
-        yearLevel: "",
-      });
-      setShowDialog(false);
+      try {
+        // Add a new document with a generated ID
+        await addDoc(collection(db, "students"), newStudent);
+        setStudents((prev) => [...prev, newStudent]);
+        setNewStudent({
+          id: "",
+          firstName: "",
+          lastName: "",
+          rfid: "",
+          contactNumber: "",
+          guardianName: "",
+          guardianContactNumber: "",
+          program: "",
+          yearLevel: "",
+        });
+        setShowDialog(false);
+      } catch (error) {
+        console.error("Error adding student: ", error);
+        alert("Error adding student. Please try again.");
+      }
     } else {
       alert("Please fill out all required fields.");
     }
@@ -200,7 +209,7 @@ const Classlist = () => {
                   required
                 />
                 <TextField
-                  label="RFID"
+                  label="RFID No."
                   value={newStudent.rfid}
                   onChange={(e) =>
                     setNewStudent({ ...newStudent, rfid: e.target.value })
@@ -208,6 +217,7 @@ const Classlist = () => {
                   fullWidth
                   required
                 />
+
                 <TextField
                   label="Contact Number"
                   value={newStudent.contactNumber}
@@ -367,7 +377,6 @@ const Classlist = () => {
                 <TableRow>
                   <TableCell sx={{ fontWeight: "bold" }}>Student ID</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Full Name</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>RFID</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Program</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Year Level</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Action</TableCell>
@@ -387,13 +396,15 @@ const Classlist = () => {
                         }}
                         onClick={() => {
                           const fullName = `${student.firstName} ${student.lastName}`;
-                          navigate(`/studentprof/${encodeURIComponent(fullName)}`);
+                          navigate(
+                            `/studentprof/${encodeURIComponent(fullName)}`
+                          );
                         }}
                       >
                         {student.firstName} {student.lastName}
                       </span>
                     </TableCell>
-                    <TableCell>{student.rfid}</TableCell>
+
                     <TableCell>{student.program}</TableCell>
                     <TableCell>{student.yearLevel}</TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
