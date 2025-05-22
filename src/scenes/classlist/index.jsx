@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../global/Sidebar";
 import Topbar from "../global/Topbar";
@@ -29,7 +29,16 @@ import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { db } from "../../firebase/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  deleteDoc,
+  doc,
+  setDoc,
+} from "firebase/firestore";
 
 const Classlist = () => {
   const navigate = useNavigate();
@@ -38,7 +47,6 @@ const Classlist = () => {
   const [selectedYearLevel, setSelectedYearLevel] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [students, setStudents] = useState([]);
-
   const [showDialog, setShowDialog] = useState(false);
   const [newStudent, setNewStudent] = useState({
     id: "",
@@ -50,23 +58,49 @@ const Classlist = () => {
     guardianContactNumber: "",
     program: "",
     yearLevel: "",
+    docId: "", // added to track editing existing doc
   });
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const programOptions = ["Computer Science", "Hotel and Restaurant Services"];
+  const programOptions = [
+    "Computer Science",
+    "Hotel and Restaurant Services",
+  ];
 
   const yearLevelsForProgram = {
     "Computer Science": ["1st Year", "2nd Year", "3rd Year", "4th Year"],
     "Hotel and Restaurant Services": ["1st Year", "2nd Year"],
   };
 
-  const yearLevelOptions = yearLevelsForProgram[selectedProgram] || [
-    "1st Year",
-    "2nd Year",
-    "3rd Year",
-    "4th Year",
-  ];
+  const yearLevelOptions =
+    yearLevelsForProgram[selectedProgram] || [
+      "1st Year",
+      "2nd Year",
+      "3rd Year",
+      "4th Year",
+    ];
 
-  const handleAddStudent = async () => {
+  // Fetch students from Firestore on component mount
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const studentsCol = collection(db, "students");
+        const studentsSnapshot = await getDocs(studentsCol);
+        const studentsList = studentsSnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          docId: doc.id, // Preserve document ID for future operations if needed
+        }));
+        setStudents(studentsList);
+      } catch (error) {
+        console.error("Error fetching students: ", error);
+        alert("Failed to load students data. Please try again later.");
+      }
+    };
+
+    fetchStudents();
+  }, []);
+
+  const handleAddOrUpdateStudent = async () => {
     if (
       newStudent.id &&
       newStudent.firstName &&
@@ -75,9 +109,42 @@ const Classlist = () => {
       newStudent.program
     ) {
       try {
-        // Add a new document with a generated ID
-        await addDoc(collection(db, "students"), newStudent);
-        setStudents((prev) => [...prev, newStudent]);
+        // Check if RFID already exists (excluding current editing student)
+        const studentsCol = collection(db, "students");
+        const q = query(
+          studentsCol,
+          where("rfid", "==", newStudent.rfid)
+        );
+        const querySnapshot = await getDocs(q);
+
+        const isDuplicateRFID = querySnapshot.docs.some(
+          (docSnap) => docSnap.id !== newStudent.docId
+        );
+
+        if (isDuplicateRFID) {
+          setErrorMessage("RFID already exists. Please use a different RFID.");
+          return;
+        }
+
+        if (newStudent.docId) {
+          // Update existing document
+          const docRef = doc(db, "students", newStudent.docId);
+          await setDoc(docRef, newStudent);
+          setStudents((prev) =>
+            prev.map((student) =>
+              student.docId === newStudent.docId ? newStudent : student
+            )
+          );
+        } else {
+          // Add a new document
+          const docRef = await addDoc(studentsCol, newStudent);
+          setStudents((prev) => [
+            ...prev,
+            { ...newStudent, docId: docRef.id },
+          ]);
+        }
+
+        // Reset form and close dialog
         setNewStudent({
           id: "",
           firstName: "",
@@ -88,30 +155,42 @@ const Classlist = () => {
           guardianContactNumber: "",
           program: "",
           yearLevel: "",
+          docId: "",
         });
         setShowDialog(false);
+        setErrorMessage("");
       } catch (error) {
-        console.error("Error adding student: ", error);
-        alert("Error adding student. Please try again.");
+        console.error("Error adding/updating student: ", error);
+        alert("Error saving student. Please try again.");
       }
     } else {
       alert("Please fill out all required fields.");
     }
   };
 
-  const handleDeleteStudent = (index) => {
+  const handleDeleteStudent = async (index) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this student?"
     );
     if (confirmed) {
-      setStudents((prev) => prev.filter((_, i) => i !== index));
+      try {
+        const studentToDelete = students[index];
+        if (studentToDelete.docId) {
+          await deleteDoc(doc(db, "students", studentToDelete.docId));
+          setStudents((prev) => prev.filter((_, i) => i !== index));
+        } else {
+          alert("Cannot find student document ID. Delete failed.");
+        }
+      } catch (error) {
+        console.error("Error deleting student: ", error);
+        alert("Failed to delete student. Please try again.");
+      }
     }
   };
 
   const handleUpdateStudent = (index) => {
     setNewStudent(students[index]);
     setShowDialog(true);
-    setStudents((prev) => prev.filter((_, i) => i !== index));
   };
 
   const filteredStudents = students.filter((student) => {
@@ -161,7 +240,22 @@ const Classlist = () => {
                   backgroundColor: "#004A8C",
                 },
               }}
-              onClick={() => setShowDialog(true)}
+              onClick={() => {
+                setNewStudent({
+                  id: "",
+                  firstName: "",
+                  lastName: "",
+                  rfid: "",
+                  contactNumber: "",
+                  guardianName: "",
+                  guardianContactNumber: "",
+                  program: "",
+                  yearLevel: "",
+                  docId: "",
+                });
+                setErrorMessage("");
+                setShowDialog(true);
+              }}
             >
               Add Student
             </Button>
@@ -169,7 +263,7 @@ const Classlist = () => {
 
           <Dialog open={showDialog} onClose={() => setShowDialog(false)}>
             <DialogTitle sx={{ fontFamily: "'Poppins', Sans-Serif" }}>
-              {newStudent.id ? "Update Student" : "Add New Student"}
+              {newStudent.docId ? "Update Student" : "Add New Student"}
             </DialogTitle>
             <DialogContent>
               <Box
@@ -217,7 +311,11 @@ const Classlist = () => {
                   fullWidth
                   required
                 />
-
+                {errorMessage && (
+                  <Typography color="error" sx={{ width: "100%" }}>
+                    {errorMessage}
+                  </Typography>
+                )}
                 <TextField
                   label="Contact Number"
                   value={newStudent.contactNumber}
@@ -298,7 +396,7 @@ const Classlist = () => {
             <DialogActions>
               <Button onClick={() => setShowDialog(false)}>Cancel</Button>
               <Button
-                onClick={handleAddStudent}
+                onClick={handleAddOrUpdateStudent}
                 variant="contained"
                 sx={{
                   backgroundColor: "#0057A4",
@@ -385,7 +483,7 @@ const Classlist = () => {
 
               <TableBody>
                 {filteredStudents.map((student, index) => (
-                  <TableRow key={index}>
+                  <TableRow key={student.docId}>
                     <TableCell>{student.id}</TableCell>
                     <TableCell>
                       <span
@@ -440,3 +538,4 @@ const Classlist = () => {
 };
 
 export default Classlist;
+
