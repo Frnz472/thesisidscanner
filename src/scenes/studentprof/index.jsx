@@ -1,55 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, AppBar, Toolbar, TextField, Avatar } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebase/firebase';
 
 const StudentProfile = () => {
-  const { name } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState("");
+  const [student, setStudent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const studentData = {
-    "Juan D. Cruz": {
-      idNumber: "0872638718",
-      contactNo: "098732632",
-      program: "BS Computer Science",
-      yearLevel: "1st Year",
-      parentName: "Maria Kusinti",
-      parentContactNo: "09171234567",
-      attendance: [
-        { date: "11/20/2024", status: "Present", course: "Computer Programming" },
-        { date: "11/19/2024", status: "Present", course: "Calculus" },
-        { date: "11/18/2024", status: "Absent", course: "Calculus" },
-      ],
-    },
-    "Peter Diego Giraffe": {
-      idNumber: "0872638719",
-      contactNo: "098732633",
-      program: "BS Computer Science",
-      yearLevel: "1st Year",
-      parentName: "Laura Macapagal",
-      parentContactNo: "09179876543",
-      attendance: [
-        { date: "11/20/2024", status: "Present", course: "Computer Programming" },
-      ],
-    }
-  };
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const docRef = doc(db, "students", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setStudent(docSnap.data());
+        } else {
+          setError("Student not found");
+        }
+      } catch (err) {
+        setError("Failed to fetch student data");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const student = studentData[decodeURIComponent(name)];
+    fetchStudent();
+  }, [id]);
 
-  if (!student) {
+  if (loading) {
     return (
       <Typography variant="h6" sx={{ fontFamily: "'Poppins', sans-serif" }}>
-        Student not found
+        Loading student data...
+      </Typography>
+    );
+  }
+
+  if (error) {
+    return (
+      <Typography variant="h6" sx={{ fontFamily: "'Poppins', sans-serif" }}>
+        {error}
       </Typography>
     );
   }
 
   const filteredAttendance = selectedDate
-    ? student.attendance.filter(record =>
+    ? (student.attendance || []).filter(record =>
         record.date === new Date(selectedDate).toLocaleDateString("en-US")
       )
-    : student.attendance;
+    : (student.attendance || []);
 
   return (
     <Box sx={{ minHeight: "100vh" }}>
@@ -88,13 +92,13 @@ const StudentProfile = () => {
           {/* Left: Student Details */}
           <Box sx={{ maxWidth: "60%" }}>
             <Typography sx={{ fontFamily: "'Poppins', sans-serif", fontSize: '1rem' }}>
-              <strong>Name:</strong> {decodeURIComponent(name)}
+              <strong>Name:</strong> {student.firstName} {student.lastName}
             </Typography>
             <Typography sx={{ fontFamily: "'Poppins', sans-serif", fontSize: '1rem' }}>
-              <strong>ID Number:</strong> {student.idNumber}
+              <strong>ID Number:</strong> {student.id}
             </Typography>
             <Typography sx={{ fontFamily: "'Poppins', sans-serif", fontSize: '1rem' }}>
-              <strong>Contact No.:</strong> {student.contactNo}
+              <strong>Contact No.:</strong> {student.contactNumber}
             </Typography>
             <Typography sx={{ fontFamily: "'Poppins', sans-serif", fontSize: '1rem' }}>
               <strong>Program:</strong> {student.program}
@@ -103,10 +107,10 @@ const StudentProfile = () => {
               <strong>Year Level:</strong> {student.yearLevel}
             </Typography>
             <Typography sx={{ fontFamily: "'Poppins', sans-serif", fontSize: '1rem', mt: 1 }}>
-              <strong>Parent's Name:</strong> {student.parentName}
+              <strong>Parent's Name:</strong> {student.guardianName}
             </Typography>
             <Typography sx={{ fontFamily: "'Poppins', sans-serif", fontSize: '1rem' }}>
-              <strong>Parent's Contact No.:</strong> {student.parentContactNo}
+              <strong>Parent's Contact No.:</strong> {student.guardianContactNumber}
             </Typography>
           </Box>
 
@@ -122,8 +126,8 @@ const StudentProfile = () => {
             }}
           >
             <Avatar 
-              alt={decodeURIComponent(name)}
-              src="" 
+              alt={`${student.firstName} ${student.lastName}`}
+              src={student.photoURL || ""} 
               sx={{ width: 150, height: 150, borderRadius: 2 }}
               variant="square"
             />

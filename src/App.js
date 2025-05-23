@@ -37,7 +37,7 @@ function App() {
               <Route path="/helps" element={<Helps />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/notification" element={<NotificationPanel />} />
-              <Route path="/studentprof/:name" element={<StudentProfile />} />
+              <Route path="/studentprof/:id" element={<StudentProfile />} />
               <Route path="/profile-settings" element={<ProfileSettings />} />
               <Route
                 path="/notification-preferences"
