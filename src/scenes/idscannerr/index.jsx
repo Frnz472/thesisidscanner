@@ -5,7 +5,11 @@ import { doc, getDoc, getDocs, query, collection, where } from "firebase/firesto
 import { db } from "../../firebase/firebase";
 
 const IDScanner = () => {
-  const [scannedStudents, setScannedStudents] = useState([]);
+  const [scannedStudents, setScannedStudents] = useState(() => {
+  
+    const saved = localStorage.getItem("scannedStudents");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -105,6 +109,11 @@ const IDScanner = () => {
   }, [isScanning, handleRFIDDetection]);
 
   useEffect(() => {
+    // Save scannedStudents to localStorage whenever it changes
+    localStorage.setItem("scannedStudents", JSON.stringify(scannedStudents));
+  }, [scannedStudents]);
+
+  useEffect(() => {
     if (error) {
       
       const timer = setTimeout(() => setError(null), 3000);
@@ -127,6 +136,16 @@ const IDScanner = () => {
             Student Attendance Scanner
           </h1>
           <div className="w-10" />
+          <button
+            onClick={() => {
+              setScannedStudents([]);
+              localStorage.removeItem("scannedStudents");
+            }}
+            className="text-white hover:text-blue-200 ml-4"
+            aria-label="Clear Scanned Students"
+          >
+            Clear
+          </button>
         </div>
       </header>
 

@@ -31,7 +31,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import { db } from "../../firebase/firebase";
 import {
   collection,
-  addDoc,
   getDocs,
   query,
   where,
@@ -141,7 +140,9 @@ const Classlist = () => {
           );
         } else {
           // Add new document
-          const docRef = await addDoc(studentsCol, {
+          const docIDn = newStudent.rfid.trim();
+          const docdown = doc(db, "students", docIDn);
+          const docRef = await setDoc(docdown, {
             id: newStudent.id.trim(),
             firstName: newStudent.firstName.trim(),
             lastName: newStudent.lastName.trim(),
@@ -154,7 +155,7 @@ const Classlist = () => {
           });
           setStudents((prev) => [
             ...prev,
-            { ...newStudent, docId: docRef.id },
+            { ...newStudent, docId: docIDn, docRef },
           ]);
         }
 

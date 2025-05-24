@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
@@ -6,11 +6,25 @@ const Profile = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState("Instructor");
+  const [position, setPosition] = useState("Instructor");
   const [email, setEmail] = useState("instructor.9837@vigan.sti.edu.ph");
+
+  
+  useEffect(() => {
+    const savedProfile = localStorage.getItem("profileData");
+    if (savedProfile) {
+      const { name, position, email } = JSON.parse(savedProfile);
+      if (name) setName(name);
+      if (position) setPosition(position);
+      if (email) setEmail(email);
+    }
+  }, []);
 
   const handleSave = () => {
     setIsEditing(false);
-    console.log("Saved:", { name, email });
+    const profileData = { name, position, email };
+    localStorage.setItem("profileData", JSON.stringify(profileData));
+    console.log("Saved:", profileData);
   };
 
   const handleLogout = () => {
@@ -39,7 +53,7 @@ const Profile = () => {
 
           <div className="ml-6">
             <h2 className="text-4xl font-bold">{name}</h2>
-            <p className="text-lg underline">STI College Vigan</p>
+            <p className="text-lg underline">{position}</p>
           </div>
 
           <div className="ml-auto">
@@ -59,7 +73,7 @@ const Profile = () => {
           <h3 className="text-2xl text-[#005BAC] font-bold mb-4">Info</h3>
           <div className="text-lg space-y-2 text-[#444]">
             <p>
-              <span className="font-semibold">Position:</span> Instructor
+              <span className="font-semibold">Position:</span> {position}
             </p>
             <p>
               <span className="font-semibold">Campus:</span> STI College Vigan
@@ -94,6 +108,16 @@ const Profile = () => {
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-5 py-3 rounded shadow-inner border bg-gray-200 text-lg"
                   placeholder="Enter your name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+                <input
+                  type="text"
+                  value={position}
+                  onChange={(e) => setPosition(e.target.value)}
+                  className="w-full px-5 py-3 rounded shadow-inner border bg-gray-200 text-lg"
+                  placeholder="Enter your position"
                 />
               </div>
               <div>
