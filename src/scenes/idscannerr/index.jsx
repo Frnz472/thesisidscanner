@@ -7,6 +7,7 @@ const IDScanner = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [student, setStudent] = useState(null); // student data state
   const navigate = useNavigate();
 
   // live clock
@@ -44,11 +45,14 @@ const IDScanner = () => {
 
     setIsScanning(true);
     setError(null);
+    setStudent(null);
 
     const studentData = await fetchStudentData(rfidTag);
 
     if (!studentData) {
       setError("Student not found in database");
+    } else {
+      setStudent(studentData);
     }
 
     setIsScanning(false);
@@ -103,7 +107,7 @@ const IDScanner = () => {
       <div className="bg-white rounded-xl shadow-lg w-full max-w-xl mt-16 p-6 flex flex-col items-center">
         {/* Blue banner */}
         <div className="bg-blue-600 text-white w-full py-3 text-center rounded-lg font-semibold text-lg">
-          TAP RFID CARD TO TIME IN / TIME OUT
+          TAP RFID CARD TO SCAN
         </div>
 
         {/* Clock */}
@@ -122,7 +126,7 @@ const IDScanner = () => {
         </div>
 
         {/* System message */}
-        <div className="bg-blue-100 w-full py-3 text-center rounded-lg text-blue-700 font-medium mb-6">
+        <div className="bg-blue-100 w-full py-3 text-center rounded-lg text-blue-700 font-medium mb-4">
           {isScanning
             ? "Scanning..."
             : error
@@ -130,15 +134,17 @@ const IDScanner = () => {
             : "Waiting for scan..."}
         </div>
 
-        {/* Buttons */}
-        <div className="flex space-x-6">
-          <button className="bg-blue-700 text-white px-8 py-3 rounded-lg text-lg hover:bg-blue-800">
-            Time In
-          </button>
-          <button className="bg-blue-700 text-white px-8 py-3 rounded-lg text-lg hover:bg-blue-800">
-            Time Out
-          </button>
-        </div>
+        {/* Student info card */}
+        {student && (
+          <div className="w-full bg-gray-50 border border-gray-200 rounded-lg shadow-md p-4 text-center">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              {student.name || "Unknown Student"}
+            </h2>
+            <p className="text-gray-600">ID: {student.id || "N/A"}</p>
+            <p className="text-gray-600">Course: {student.course || "N/A"}</p>
+            <p className="text-gray-600">RFID: {student.rfid || "N/A"}</p>
+          </div>
+        )}
       </div>
     </div>
   );
